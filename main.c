@@ -26,6 +26,8 @@ int main() {
         printf("6. Quitter\n");
         printf("Entrez votre choix : ");
         choice = getUserChoice();
+        int iterations, steps;
+        int row, col, newType, newState, newDegree;
 
         // Traiter le choix de l'utilisateur
         switch (choice) {
@@ -41,26 +43,26 @@ int main() {
 
             case 3:
                 // Demander le nombre d'itérations pour la simulation
-                int iterations = getSimulationIterations();
+                iterations = getSimulationIterations();
                 simulateFire(&forest, iterations);
                 printForest(&forest);
                 break;
 
             case 4:
                 // Revenir en arrière dans la simulation
-                int steps = getStepsToGoBack();
+                steps = getStepsToGoBack();
                 goBackInSimulation(&forest, steps);
                 printForest(&forest);
                 break;
             case 5:
                 // Modifier une cellule
-                int row, col, newType, newState, newDegree;
+                
                 getCellModification(&row, &col, &newType, &newState, &newDegree);
                 modifyCell(&forest, row, col, newType, newState, newDegree);
                 printForest(&forest);
                 break;
             case 6:
-    		 checkFirePropagation(&forest);
+    		 checkFirePropagation(&forest, row, col, &steps);
     		 break;
 
             case 7:

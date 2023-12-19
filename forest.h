@@ -13,6 +13,12 @@ typedef enum {
     CENDRES_ETEINTES
 } CellType;
 
+typedef enum {
+    FEU,
+    EN_FEU,
+    ETEINT
+} ETAT;
+
 // Structure de la cellule de la forêt
 typedef struct {
     CellType type;
@@ -24,14 +30,16 @@ typedef struct {
 typedef struct {
     int length;
     int width;
+    int** visited;
     Cell** cells;
-} Forest;
+} Forest, ForestState;
 
 // Prototypes des fonctions
 void initializeForest(Forest* forest, int length, int width);
 void fillRandomForest(Forest* forest);
 void fillManualForest(Forest* forest);
 void printForest(const Forest* forest);
+void modifyCell(Forest* forest, int row, int col, int newType, int newState, int newDegree);
 
 #endif // FOREST_H
 

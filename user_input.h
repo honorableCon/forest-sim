@@ -9,6 +9,7 @@ int getUserChoice();
 void getUserDimensions(int* length, int* width);
 void fillRandomForest(Forest* forest);
 void fillManualForest(Forest* forest);
+int getStepsToGoBack();
 int getSimulationIterations();
 void getCellModification(int* row, int* col, int* newType, int* newState, int* newDegree);
 

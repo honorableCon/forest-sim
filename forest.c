@@ -46,7 +46,7 @@ void fillManualForest(Forest* forest) {
     for (int i = 0; i < forest->length; ++i) {
         for (int j = 0; j < forest->width; ++j) {
             printf("Entrez le type de cellule pour la position [%d, %d] (0-6) : ", i, j);
-            scanf("%d", &(forest->cells[i][j].type));
+            scanf("%x", &(forest->cells[i][j].type));
 
             // Valide la saisie de l'utilisateur pour le type de cellule.
             if (forest->cells[i][j].type < 0 || forest->cells[i][j].type > 6) {

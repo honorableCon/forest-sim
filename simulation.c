@@ -14,7 +14,7 @@ void simulateFire(Forest* forest, int iterations) {
         for (int i = 0; i < forest->length; ++i) {
             for (int j = 0; j < forest->width; ++j) {
                 if (forest->cells[i][j].type == FEU) {
-                    propagateFire(forest, &tempForest, i, j);
+                    propagateFire(forest, j);
                 }
             }
         }
@@ -66,8 +66,6 @@ void propagateFire(Forest* forest, int iterations) {
     }
 }
 
-// simulation.c
-#include "simulation.h"
 
 int isNeighborOnFire(const Forest* forest, int row, int col) {
     // Coordonnées des 8 voisins possibles (en supposant que la matrice est torique)
@@ -94,8 +92,6 @@ int isNeighborOnFire(const Forest* forest, int row, int col) {
 }
 
 
-// simulation.c
-#include "simulation.h"
 
 void copyForest(const Forest* source, Forest* destination) {
     for (int i = 0; i < source->length; ++i) {
@@ -131,6 +127,7 @@ void restorePreviousState(Forest* forest, ForestState* state) {
         }
     }
 }
+
 
 void goBackInSimulation(Forest* forest, int steps) {
     // Structure pour sauvegarder l'état précédent
@@ -218,8 +215,6 @@ int checkFirePropagation(Forest* forest, int pointA, int pointB, int* steps) {
     }
 }
 
-// Autres fonctions de simulation
-
 // Fonction de réinitialisation des cellules visitées
 void resetVisitedCells(Forest* forest) {
     for (int i = 0; i < forest->length; ++i) {
@@ -228,6 +223,4 @@ void resetVisitedCells(Forest* forest) {
         }
     }
 }
-
-// ... (autres fonctions de simulation)
 

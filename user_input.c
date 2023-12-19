@@ -19,7 +19,12 @@ void getUserDimensions(int* length, int* width) {
     scanf("%d %d", length, width);
 }
 
-
+int getStepsToGoBack(){
+    int steps;
+    printf("Entrez le nombre de pas de simulation : ");
+    scanf("%d", &steps);
+    return steps;
+}
 
 
 int getSimulationIterations() {
@@ -42,19 +47,3 @@ void getCellModification(int* row, int* col, int* newType, int* newState, int* n
     printf("Entrez le nouveau degré de la cellule : ");
     scanf("%d", newDegree);
 }
-
-void getCellModification(int* row, int* col, int* newType, int* newState, int* newDegree) {
-    printf("Entrez les coordonnées de la cellule à modifier (ligne colonne) : ");
-    scanf("%d %d", row, col);
-
-    printf("Entrez le nouveau type (entier) : ");
-    scanf("%d", newType);
-
-    printf("Entrez le nouvel état (entier) : ");
-    scanf("%d", newState);
-
-    printf("Entrez le nouveau degré (entier) : ");
-    scanf("%d", newDegree);
-}
-
-
