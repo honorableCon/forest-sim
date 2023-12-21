@@ -67,12 +67,13 @@ int getRandomDegree(char cellType) {
             return degree;
     }
 
+
+}
+
+
 char getRandomCellType() {
     char cellTypes[] = { '+', '*', ' ', '#', 'x', '/', '-', '@' };
     int numTypes = sizeof(cellTypes) / sizeof(char);
     int randomIndex = getRandomNumber(0, numTypes - 1);
     return cellTypes[randomIndex];
 }
-}
-
-
