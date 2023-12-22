@@ -1,210 +1,227 @@
 #include "forest.h"
-#include <stdio.h>
+#include "utils.h"
 #include <stdlib.h>
-#include "utilities.h"
+#include <stdio.h>
+#include <time.h>
 
-Forest* createForest(int rows, int cols) {
-    Forest *forest = (Forest*)malloc(sizeof(Forest));
-    forest->rows = rows;
-    forest->cols = cols;
-    forest->cells = (Cell**)malloc(rows * sizeof(Cell*));
+Foret *initialiserForet(int largeur, int longueur) {
+    Foret *foret = malloc(sizeof(Foret));
+    if (!foret) return NULL;
 
-    for (int i = 0; i < rows; i++) {
-        forest->cells[i] = (Cell*)malloc(cols * sizeof(Cell));
+    foret->largeur = largeur;
+    foret->longueur = longueur;
+
+    foret->cellules = malloc(longueur * sizeof(Cellule*));
+    if (!foret->cellules) {
+        free(foret);
+        return NULL;
     }
 
-    return forest;
-}
-
-void destroyForest(Forest *forest) {
-    for (int i = 0; i < forest->rows; i++) {
-        free(forest->cells[i]);
-    }
-    free(forest->cells);
-    free(forest);
-}
-
-void initializeForest(Forest *forest) {
-    for (int i = 0; i < forest->rows; i++) {
-        for (int j = 0; j < forest->cols; j++) {
-            forest->cells[i][j].type = ' ';  //  initialiser avec le type par défaut
-            forest->cells[i][j].state = 0;
-            forest->cells[i][j].degree = 0;
+    for (int i = 0; i < longueur; i++) {
+        foret->cellules[i] = malloc(largeur * sizeof(Cellule));
+        if (!foret->cellules[i]) {
+            // Libération de la mémoire en cas d'erreur
+            for (int j = 0; j < i; j++) {
+                free(foret->cellules[j]);
+            }
+            free(foret->cellules);
+            free(foret);
+            return NULL;
         }
     }
+
+    // Initialisation des cellules
+    for (int i = 0; i < longueur; i++) {
+        for (int j = 0; j < largeur; j++) {
+            foret->cellules[i][j].type = SOL;
+            foret->cellules[i][j].etat = 0;
+            foret->cellules[i][j].degre = 0;
+        }
+    }
+
+    return foret;
 }
-void printForest(Forest *forest) {
-    for (int i = 0; i < forest->rows; i++) {
-        for (int j = 0; j < forest->cols; j++) {
-            // Afficher le type de cellule, l'état et le degré
-            printf("%c%d%d ", forest->cells[i][j].type, forest->cells[i][j].state, forest->cells[i][j].degree);
+
+void afficherForet(Foret *foret) {
+    for (int i = 0; i < foret->longueur; i++) {
+        for (int j = 0; j < foret->largeur; j++) {
+            char symbole;
+            switch (foret->cellules[i][j].type) {
+                case SOL: symbole = '+'; break;
+                case ARBRE: symbole = '*'; break;
+                case FEUILLE: symbole = '2'; break;
+                case ROCHE: symbole = '#'; break;
+                case HERBE: symbole = 'x'; break;
+                case EAU: symbole = '/'; break;
+                case CENDRES: symbole = '-'; break;
+                case CENDRES_ETEINTES: symbole = '@'; break;
+                default: symbole = '?';
+            }
+            printf("%c ", symbole);
         }
         printf("\n");
     }
 }
 
-/*void printForest(Forest *forest) {
-    for (int i = 0; i < forest->rows; i++) {
-        for (int j = 0; j < forest->cols; j++) {
-            printf("%c%d%d ", forest->cells[i][j].type, forest->cells[i][j].state, forest->cells[i][j].degree);
-        }
-        printf("\n");
+void libererForet(Foret *foret) {
+    if (!foret) return;
+
+    for (int i = 0; i < foret->longueur; i++) {
+        free(foret->cellules[i]);
     }
-}*/
-void startSimulation(Forest *forest, int iterations) {
-    for (int i = 0; i < iterations; i++) {
-        checkFireSpread(forest);
-        printf("Iteration %d:\n", i + 1);
-        printForest(forest);
+    free(foret->cellules);
+    free(foret);
+}
+
+void remplirForetAleatoire(Foret *foret) {
+    srand(time(NULL)); // Initialisation du générateur de nombres aléatoires
+
+    for (int i = 0; i < foret->longueur; i++) {
+        for (int j = 0; j < foret->largeur; j++) {
+            int typeAleatoire = rand() % 8; // Génère un nombre entre 0 et 7
+            foret->cellules[i][j].type = (TypeCellule)typeAleatoire;
+            foret->cellules[i][j].etat = 0;
+            foret->cellules[i][j].degre = (typeAleatoire == ARBRE || typeAleatoire == FEUILLE) ? 2 : 0;
+        }
     }
 }
 
-
-
-
-void modifyCell(Forest *forest) {
-    int x, y;
-    printf("entrer les coordonnées de la cellule à modifier (x & y): ");
-    scanf("%d %d", &x, &y);
-
-    if (isValidCoordinate(forest, x, y)) {
-        // Vous pouvez ajouter le code pour modifier la cellule à ces coordonnées ici
-        // Par exemple, demandez à l'utilisateur de spécifier le nouveau type, l'état, ou le degré de la cellule
-
-        printf("Enter le nouveau type, etat et degre de la cellule (%d, %d): ", x, y);
-        scanf(" %c %d %d", &forest->cells[x][y].type, &forest->cells[x][y].state, &forest->cells[x][y].degree);
-
-        // Modifier les symboles en fonction du type de cellule
-        switch (forest->cells[x][y].type) {
-            case '+':
-                // Symbole pour le sol
-                break;
-            case '*':
-                // Symbole pour l'arbre
-                break;
-            case ' ':
-                // Symbole pour feuille
-                break;
-            case '#':
-                // Symbole pour la roche
-                break;
-            case 'x':
-                // Symbole pour herbe
-                break;  
-             case '/':
-                // Symbole pour la eau
-                break;  
-             case '-':
-                // Symbole pour la cendre
-                break;
-             case '@':
-                // Symbole pour la ce,dr éteints
-                break;
-            
+void remplirForetManuel(Foret *foret) {
+    int type;
+    printf("Remplissage manuel de la forêt :\n");
+    for (int i = 0; i < foret->longueur; i++) {
+        for (int j = 0; j < foret->largeur; j++) {
+            printf("Cellule [%d, %d] - Type (0: SOL, 1: ARBRE, 2: FEUILLE, 3: ROCHE, 4: HERBE, 5: EAU, 6: CENDRES, 7: CENDRES_ETEINTES): ", i, j);
+            scanf("%d", &type);
+            foret->cellules[i][j].type = (TypeCellule)type;
+            foret->cellules[i][j].etat = 0;
+            foret->cellules[i][j].degre = (type == ARBRE || type == FEUILLE) ? 2 : 0;
         }
-
-        printf("Cellule: (%d, %d) modifiée.\n", x, y);
-
-    } else {
-        printf("Coordonnée invalides donc cellules non modifiée\n");
     }
 }
 
-
-/*void checkFireSpread(Forest *forest) {
-    // Créer une copie de l'état actuel de la forêt pour éviter les modifications pendant la propagation du feu
-    int copyState[forest->rows][forest->cols];
-
-    for (int i = 0; i < forest->rows; i++) {
-        for (int j = 0; j < forest->cols; j++) {
-            copyState[i][j] = forest->cells[i][j].state;
-        }
+void modifierCellule(Foret *foret, int x, int y, TypeCellule type, int etat, int degre) {
+    if (x >= 0 && x < foret->longueur && y >= 0 && y < foret->largeur) {
+        foret->cellules[x][y].type = type;
+        foret->cellules[x][y].etat = etat;
+        foret->cellules[x][y].degre = degre;
     }
+}
 
-    // Propagation du feu
-    for (int i = 0; i < forest->rows; i++) {
-        for (int j = 0; j < forest->cols; j++) {
-            if (forest->cells[i][j].state == 1) {
-                // La cellule est en feu
+void propagerFeu(Foret *foret, int x, int y) {
+    if (x < 0 || x >= foret->longueur || y < 0 || y >= foret->largeur) return;
 
-                // Si le degré est égal à 2, elle devient en cendres à la prochaine itération
-                if (forest->cells[i][j].degree == 2) {
-                    forest->cells[i][j].state = 0;  // En cendres
-                    forest->cells[i][j].degree = 0;
-                }
-                // Si le degré est supérieur à 2, le degré diminue de 1
-                else if (forest->cells[i][j].degree > 2) {
-                    forest->cells[i][j].degree -= 1;
-                }
+    Cellule *cellule = &foret->cellules[x][y];
+    if (cellule->type == EAU || cellule->type == ROCHE) return;
 
-                // Vérifier les voisins
-                for (int dx = -1; dx <= 1; dx++) {
-                    for (int dy = -1; dy <= 1; dy++) {
-                        int x = i + dx;
-                        int y = j + dy;
-
-                        if (isValidCoordinate(forest, x, y) &&
-                            copyState[x][y] == 1 &&
-                            forest->cells[x][y].type != 'S') {
-                            // La cellule a un voisin en feu, elle s'enflamme à la prochaine itération
-                            forest->cells[i][j].state = 1;
-                            forest->cells[i][j].degree -= 1;
-                            break;
-                        }
+    if (cellule->etat == 1) {
+        if (cellule->degre > 2) {
+            cellule->degre--;
+        } else {
+            cellule->type = CENDRES;
+            cellule->etat = 0;
+            cellule->degre = 1;
+        }
+    } else if (cellule->etat == 0 && cellule->type != SOL && cellule->type != CENDRES && cellule->type != CENDRES_ETEINTES) {
+        // Vérifiez les voisins pour voir si l'un d'entre eux est en feu
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                if (dx == 0 && dy == 0) continue;
+                int voisinX = x + dx, voisinY = y + dy;
+                if (voisinX >= 0 && voisinX < foret->longueur && voisinY >= 0 && voisinY < foret->largeur) {
+                    Cellule voisin = foret->cellules[voisinX][voisinY];
+                    if (voisin.etat == 1) {
+                        cellule->etat = 1;
+                        break;
                     }
                 }
             }
+            if (cellule->etat == 1) break;
         }
     }
-}*/
-void checkFireSpread(Forest *forest) {
-    // Copie temporaire de la forêt pour stocker les modifications sans influencer les itérations en cours
-    Forest tempForest;
-    tempForest.rows = forest->rows;
-    tempForest.cols = forest->cols;
-    tempForest.cells = malloc(tempForest.rows * sizeof(Cell*));
-    for (int i = 0; i < tempForest.rows; i++) {
-        tempForest.cells[i] = malloc(tempForest.cols * sizeof(Cell));
-    }
+}
 
-    // Copier la forêt actuelle dans la tempForest
-    for (int i = 0; i < forest->rows; i++) {
-        for (int j = 0; j < forest->cols; j++) {
-            tempForest.cells[i][j] = forest->cells[i][j];
+void simulerIncendie(Foret *foret, int iterations, int x, int y) {
+    if (x < 0 || x >= foret->longueur || y < 0 || y >= foret->largeur) return;
+
+    foret->cellules[x][y].etat = 1; // Commencez l'incendie
+
+    for (int it = 0; it < iterations; it++) {
+        // Créez une copie de la forêt pour éviter de modifier la forêt en cours de parcours
+        Foret *copieForet = initialiserForet(foret->largeur, foret->longueur);
+        for (int i = 0; i < foret->longueur; i++) {
+            for (int j = 0; j < foret->largeur; j++) {
+                copieForet->cellules[i][j] = foret->cellules[i][j];
+            }
         }
+
+        // Propager le feu
+        for (int i = 0; i < foret->longueur; i++) {
+            for (int j = 0; j < foret->largeur; j++) {
+                propagerFeu(copieForet, i, j);
+            }
+        }
+
+        // Mettez à jour la forêt originale
+        for (int i = 0; i < foret->longueur; i++) {
+            for (int j = 0; j < foret->largeur; j++) {
+                foret->cellules[i][j] = copieForet->cellules[i][j];
+            }
+        }
+
+        libererForet(copieForet);
+
+        // Afficher l'état actuel de la forêt
+        afficherForet(foret);
+        printf("Itération %d\n", it + 1);
+    }
+}
+
+
+int verifierPropagation(Foret *foret, int x1, int y1, int x2, int y2) {
+    if (!estAccessible(foret, x1, y1) || !estAccessible(foret, x2, y2)) {
+        return 0;
     }
 
-    // Implémentation de la fonction de vérification de la propagation du feu
-    for (int i = 0; i < forest->rows; i++) {
-        for (int j = 0; j < forest->cols; j++) {
-            // Pour vérifier les voisins de chaque cellule
-            if (tempForest.cells[i][j].state == 0 && tempForest.cells[i][j].type != 'S') {
-                // La cellule n'est pas en feu et n'est pas du sol
-                for (int dx = -1; dx <= 1; dx++) {
-                    for (int dy = -1; dy <= 1; dy++) {
-                        int x = i + dx;
-                        int y = j + dy;
+    bool **visited = malloc(foret->longueur * sizeof(bool *));
+    for (int i = 0; i < foret->longueur; i++) {
+        visited[i] = calloc(foret->largeur, sizeof(bool));
+    }
 
-                        if (isValidCoordinate(forest, x, y) &&
-                            tempForest.cells[x][y].state == 1) {
-                            // La cellule a un voisin en feu, elle s'enflamme
-                            forest->cells[i][j].state = 1;
-                            forest->cells[i][j].degree = tempForest.cells[i][j].degree - 1;
-                            break;
-                        }
-                    }
-                }
+    Node *queueHead = NULL, *queueTail = NULL;
+    enqueue(&queueHead, &queueTail, (Point){x1, y1});
+
+    int directions[8][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
+
+    while (queueHead != NULL) {
+        Point current;
+        dequeue(&queueHead, &queueTail, &current);
+
+        if (current.x == x2 && current.y == y2) {
+            // Nettoyage
+            for (int i = 0; i < foret->longueur; i++) {
+                free(visited[i]);
+            }
+            free(visited);
+            return 1;
+        }
+
+        for (int i = 0; i < 8; i++) {
+            int newX = current.x + directions[i][0];
+            int newY = current.y + directions[i][1];
+
+            if (estAccessible(foret, newX, newY) && !visited[newX][newY]) {
+                visited[newX][newY] = true;
+                enqueue(&queueHead, &queueTail, (Point){newX, newY});
             }
         }
     }
 
-    // Libérer la mémoire allouée pour la tempForest
-    for (int i = 0; i < tempForest.rows; i++) {
-        free(tempForest.cells[i]);
+    // Nettoyage
+    for (int i = 0; i < foret->longueur; i++) {
+        free(visited[i]);
     }
-    free(tempForest.cells);
+    free(visited);
+
+    return 0;
 }
-
-
-
-

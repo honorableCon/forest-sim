@@ -1,73 +1,79 @@
+#include "forest.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "forest.h"
-#include "utilities.h"
-
-void initializeForestManually(Forest *forest) {
-    for (int i = 0; i < forest->rows; i++) {
-        for (int j = 0; j < forest->cols; j++) {
-            printf("Enter the type, state, and degree for the cell at (%d, %d): ", i, j);
-            scanf(" %c %d %d", &forest->cells[i][j].type, &forest->cells[i][j].state, &forest->cells[i][j].degree);
-        }
-    }
-}
 
 int main() {
-    int rows, cols;
-    printf("Enter the dimensions of the forest (rows and columns): ");
-    scanf("%d %d", &rows, &cols);
+    int largeur, longueur, choix, iterations, x, y;
+    Foret *foret = NULL;
 
-    Forest *forest = createForest(rows, cols);
-    initializeForest(forest);
+    printf("Simulation de propagation d'incendie en forêt\n");
+    printf("Entrez la largeur de la forêt: ");
+    scanf("%d", &largeur);
+    printf("Entrez la longueur de la forêt: ");
+    scanf("%d", &longueur);
 
-    int choice;
-    int iterations = 0;
-
-    while (1) {
-        printf("\nMenu :\n");
-        printf("1. Remplir la forêt aléatoirement\n");
-        printf("2. Remplir la forêt manuellement\n");
-        printf("3. Démarrer la simulation\n");
-        printf("4. Modifier une cellule\n");
-        printf("5. Vérifier la propagation du feu\n");
-        printf("6. Quitter\n");
-        printf("Entrez votre choix : ");
-        scanf("%d", &choice);
-        switch (choice) {
-            case 1:
-                // Fill Forest Randomly
-                initializeForestRandomly(forest);
-                printForest(forest);
-                break;
-            case 2:
-                initializeForestManually(forest);
-                printForest(forest);
-                break;
-            case 3:
-                // Start Simulation
-                if (iterations == 0) {
-                    printf("Enter the number of simulation iterations: ");
-                    scanf("%d", &iterations);
-                }
-                startSimulation(forest, iterations);
-                break;
-            case 4:
-                // Modify Cell
-                modifyCell(forest);
-                printForest(forest);
-                break;
-            case 5:
-                // Check Fire Spread
-                checkFireSpread(forest);
-                break;
-            case 6:
-                // Quit
-                destroyForest(forest);
-                return 0;
-            default:
-                printf("Invalid choice. Please try again.\n");
-        }
+    foret = initialiserForet(largeur, longueur);
+    if (!foret) {
+        fprintf(stderr, "Erreur lors de l'initialisation de la forêt.\n");
+        return 1;
     }
 
+    do {
+        printf("\nMenu:\n");
+        printf("1. Remplir la forêt aléatoirement\n");
+        printf("2. Remplir la forêt manuellement\n");
+        printf("3. Simuler un incendie\n");
+        printf("4. Modifier une cellule\n");
+        printf("5. Vérifier la propagation d'un point A à un point B\n");
+        printf("6. Quitter\n");
+        printf("Choix: ");
+        scanf("%d", &choix);
+
+        switch (choix) {
+            case 1:
+                remplirForetAleatoire(foret);
+                afficherForet(foret);
+                break;
+            case 2:
+                remplirForetManuel(foret);
+                afficherForet(foret);
+                break;
+            case 3:
+                printf("Entrez le nombre d'itérations pour la simulation: ");
+                scanf("%d", &iterations);
+                printf("Entrez les coordonnées de départ du feu (x y): ");
+                scanf("%d %d", &x, &y);
+                simulerIncendie(foret, iterations, x, y);
+                break;
+            case 4:
+                printf("Entrez les coordonnées de la cellule à modifier (x y): ");
+                scanf("%d %d", &x, &y);
+                int tempType, etat, degre;
+                printf("Entrez le nouveau type (0: SOL, 1: ARBRE, etc.), état (0 ou 1) et degré: ");
+                scanf("%d %d %d", &tempType, &etat, &degre);
+                modifierCellule(foret, x, y, (TypeCellule)tempType, etat, degre);
+                afficherForet(foret);
+                break;
+            case 5:
+                printf("Entrez les coordonnées du point A (x y): ");
+                scanf("%d %d", &x, &y);
+                int x2, y2;
+                printf("Entrez les coordonnées du point B (x y): ");
+                scanf("%d %d", &x2, &y2);
+                if (verifierPropagation(foret, x, y, x2, y2)) {
+                    printf("Un incendie peut se propager du point A au point B.\n");
+                } else {
+                    printf("Un incendie ne peut pas se propager du point A au point B.\n");
+                }
+                break;
+            case 6:
+                printf("Quitter.\n");
+                break;
+            default:
+                printf("Choix invalide. Veuillez réessayer.\n");
+        }
+    } while (choix != 6);
+
+    libererForet(foret);
     return 0;
 }
